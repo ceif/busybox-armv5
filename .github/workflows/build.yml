@@ -1,4 +1,4 @@
-name: Build BusyBox ARMv5 Anyka Safe
+name: Build BusyBox ARMv5 Anyka OABI
 
 on:
   workflow_dispatch:
@@ -15,24 +15,23 @@ jobs:
 
       - name: Download BusyBox
         run: |
-          wget https://busybox.net/downloads/busybox-1.34.1.tar.bz2
-          tar -xjf busybox-1.34.1.tar.bz2
+          wget https://busybox.net/downloads/busybox-1.33.1.tar.bz2
+          tar -xjf busybox-1.33.1.tar.bz2
 
-      - name: Configure BusyBox
+      - name: Configure
         run: |
-          cd busybox-1.34.1
+          cd busybox-1.33.1
           make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- defconfig
           sed -i 's/^# CONFIG_STATIC is not set/CONFIG_STATIC=y/' .config
-          sed -i 's/^CONFIG_PIE=y/# CONFIG_PIE is not set/' .config
-          sed -i 's/^CONFIG_EXTRA_CFLAGS.*/CONFIG_EXTRA_CFLAGS="-march=armv5te -mtune=arm926ej-s -marm -msoft-float -O1"/' .config
+          echo 'CONFIG_EXTRA_CFLAGS="-march=armv5te -mtune=arm926ej-s -marm -msoft-float -mabi=apcs-gnu -O1"' >> .config
 
-      - name: Build BusyBox
+      - name: Build
         run: |
-          cd busybox-1.34.1
+          cd busybox-1.33.1
           make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- -j$(nproc)
 
-      - name: Upload binary
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: busybox-armv5-anyka-safe
-          path: busybox-1.34.1/busybox
+          name: busybox-armv5-anyka-oabi
+          path: busybox-1.33.1/busybox
